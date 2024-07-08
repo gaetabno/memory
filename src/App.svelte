@@ -1,48 +1,66 @@
 <script>
   import { onMount } from "svelte";
-  import { cards } from "./lib/cards";
+  import { cards, handleShuffle } from "./lib/cards";
 
-  // creo doppioni della card
+  $: shuffledCards = handleShuffle(cards);
 
-  // --
+  $: firstTouch = null;
+  $: secondTouch = null;
+  $: secondTouch, checkTwins();
 
-  
-  $: cardsToShuffle = [...cards, ...cards];
-
-  const shuffleCards = () => {
-
-    let currentIndex = cardsToShuffle.length;
-
-    // While there remain elements to shuffle...
-    while (currentIndex != 0) {
-      // Pick a remaining element...
-      let randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-
-      // And swap it with the current element.
-      [cardsToShuffle[currentIndex], cardsToShuffle[randomIndex]] = [
-        cardsToShuffle[randomIndex],
-        cardsToShuffle[currentIndex],
-      ];
+  const checkTouch = (id) => {
+    if (!firstTouch) {
+      firstTouch = id;
+    } else if (!secondTouch && firstTouch) {
+      secondTouch = id;
     }
+  };
 
-    return cardsToShuffle;
+  const rightTwins = (parentId) => {
+    shuffledCards.map((card) => {
+      if (card.parentId === parentId) {
+        card.checked = true;
+      }
+    });
+
+    shuffledCards = [...shuffledCards]
+  };
+
+  const checkTwins = () => {
+    if (secondTouch) {
+      if (firstTouch.parentId === secondTouch.parentId) {
+        rightTwins(secondTouch.parentId);
+        firstTouch = null;
+        secondTouch = null;
+      } else {
+        console.log("coprire coppia", firstTouch, secondTouch);
+        firstTouch = null;
+        secondTouch = null;
+      }
+    }
   };
 
   onMount(() => {
-    shuffleCards();
+    handleShuffle(cards);
   });
 </script>
 
-<div class="bg-blue-700">
-  <div class="grid grid-cols-6 gap-5">
-    {#each cardsToShuffle as card (card.id)}
-      <div
-        class="card__item grid place-content-center"
-        style={"background:" + card.item}
-      >
-        {card.id}
-      </div>
+<div class="bg-blue-700 h-dvh grid place-content-center">
+  <div class="grid grid-cols-6 gap-5 p-4 w-screen">
+    {#each shuffledCards as card}
+      {#if card.checked}
+        <div
+          class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
+        ></div>
+      {:else}
+        <button
+          class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
+          style={"background:" + cards[card.parentId - 1].item}
+          on:click={() => checkTouch(card)}
+        >
+          {cards[card.parentId - 1].id}
+        </button>
+      {/if}
     {/each}
   </div>
 </div>
