@@ -8,16 +8,29 @@
   $: firstTouch = null;
   $: secondTouch = null;
   $: secondTouch, checkTwins();
+  $: timer = 60;
+  $: timer, endGame();
 
   let overlay = false;
+  let newGame = false;
 
-  $: console.log(secondTouch);
+  const startGame = () => {
+    newGame = true;
+    timer = 60;
+    setInterval(() => {
+      if (timer > 0) timer--;
+    }, 1000);
+  };
+
+  const endGame = () => {
+    if (timer === 0) newGame = false;
+  };
 
   const checkTouch = (id) => {
     if (!firstTouch) {
       firstTouch = id;
     } else if (!secondTouch && firstTouch) {
-      secondTouch = id;
+      if (firstTouch !== id) secondTouch = id;
     }
   };
 
@@ -49,7 +62,7 @@
           wrongTwins();
           firstTouch = null;
           secondTouch = null;
-        }, 1500);
+        }, 1000);
       }
     }
 
@@ -61,19 +74,34 @@
   });
 </script>
 
-<div class="bg-blue-700 h-dvh grid place-content-center relative">
-  <div class="grid grid-cols-4 gap-5 p-4 w-screen max-w-screen-md">
-    {#each shuffledCards as card}
-      {#if card.checked}
-        <div
-          class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
-        ></div>
-      {:else}
-        <Card {card} parentCard={cards[card.parentId - 1]} {checkTouch} />{/if}
-    {/each}
-  </div>
-  <div
-    class="c-grid--overlay absolute w-full h-full left-0 top-0"
-    class:hidden={secondTouch === null}
-  ></div>
+<div class="bg-blue-700 h-dvh grid place-content-center relative gap-5">
+  {#if newGame}
+    <div
+      class="bg-neutral rounded-box text-neutral-content flex p-2 justify-center w-48 mx-auto"
+    >
+      <span class="countdown font-mono text-5xl">
+        {timer}
+      </span>
+    </div>
+    <div class="grid grid-cols-4 gap-5 p-4 w-screen max-w-screen-md">
+      {#each shuffledCards as card}
+        {#if card.checked}
+          <div
+            class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
+          ></div>
+        {:else}
+          <Card
+            {card}
+            parentCard={cards[card.parentId - 1]}
+            {checkTouch}
+          />{/if}
+      {/each}
+    </div>
+    <div
+      class="c-grid--overlay absolute w-full h-full left-0 top-0"
+      class:hidden={secondTouch === null}
+    ></div>
+  {:else}
+    <button class="btn btn-info" on:click={() => startGame()}>New Game</button>
+  {/if}
 </div>
