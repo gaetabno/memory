@@ -12,7 +12,7 @@
 </script>
 
 <button
-  class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
+  class="w-100 h-48 grid place-content-center rounded text-lg font-bold"
   style="background: {hide ? '#cac500' : parentCard.item}"
   on:click={() => handleClick()}
 >

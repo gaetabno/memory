@@ -62,7 +62,7 @@
 </script>
 
 <div class="bg-blue-700 h-dvh grid place-content-center relative">
-  <div class="grid grid-cols-6 gap-5 p-4 w-screen">
+  <div class="grid grid-cols-4 gap-5 p-4 w-screen max-w-screen-md">
     {#each shuffledCards as card}
       {#if card.checked}
         <div
