@@ -1,4 +1,5 @@
 <script>
+  import Card from "./components/Card.svelte";
   import { onMount } from "svelte";
   import { cards, handleShuffle } from "./lib/cards";
 
@@ -7,6 +8,8 @@
   $: firstTouch = null;
   $: secondTouch = null;
   $: secondTouch, checkTwins();
+
+  let cardHide;
 
   const checkTouch = (id) => {
     if (!firstTouch) {
@@ -23,7 +26,12 @@
       }
     });
 
-    shuffledCards = [...shuffledCards]
+    shuffledCards = [...shuffledCards];
+  };
+
+  const wrongTwins = () => {
+    shuffledCards.map((card) => (card.hide = true));
+    shuffledCards = [...shuffledCards];
   };
 
   const checkTwins = () => {
@@ -33,6 +41,10 @@
         firstTouch = null;
         secondTouch = null;
       } else {
+        setTimeout(() => {
+          wrongTwins();
+        }, 1500);
+
         console.log("coprire coppia", firstTouch, secondTouch);
         firstTouch = null;
         secondTouch = null;
@@ -53,14 +65,7 @@
           class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
         ></div>
       {:else}
-        <button
-          class="w-100 h-28 grid place-content-center rounded text-lg font-bold"
-          style={"background:" + cards[card.parentId - 1].item}
-          on:click={() => checkTouch(card)}
-        >
-          {cards[card.parentId - 1].id}
-        </button>
-      {/if}
+        <Card {card} parentCard={cards[card.parentId - 1]} {checkTouch} />{/if}
     {/each}
   </div>
 </div>
