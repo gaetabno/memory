@@ -9,7 +9,9 @@
   $: secondTouch = null;
   $: secondTouch, checkTwins();
 
-  let cardHide;
+  let overlay = false;
+
+  $: console.log(secondTouch);
 
   const checkTouch = (id) => {
     if (!firstTouch) {
@@ -37,19 +39,21 @@
   const checkTwins = () => {
     if (secondTouch) {
       if (firstTouch.parentId === secondTouch.parentId) {
-        rightTwins(secondTouch.parentId);
-        firstTouch = null;
-        secondTouch = null;
+        setTimeout(() => {
+          rightTwins(secondTouch.parentId);
+          firstTouch = null;
+          secondTouch = null;
+        }, 500);
       } else {
         setTimeout(() => {
           wrongTwins();
+          firstTouch = null;
+          secondTouch = null;
         }, 1500);
-
-        console.log("coprire coppia", firstTouch, secondTouch);
-        firstTouch = null;
-        secondTouch = null;
       }
     }
+
+    overlay = true;
   };
 
   onMount(() => {
@@ -57,7 +61,7 @@
   });
 </script>
 
-<div class="bg-blue-700 h-dvh grid place-content-center">
+<div class="bg-blue-700 h-dvh grid place-content-center relative">
   <div class="grid grid-cols-6 gap-5 p-4 w-screen">
     {#each shuffledCards as card}
       {#if card.checked}
@@ -68,7 +72,8 @@
         <Card {card} parentCard={cards[card.parentId - 1]} {checkTouch} />{/if}
     {/each}
   </div>
+  <div
+    class="c-grid--overlay absolute w-full h-full left-0 top-0"
+    class:hidden={secondTouch === null}
+  ></div>
 </div>
-
-<style>
-</style>
