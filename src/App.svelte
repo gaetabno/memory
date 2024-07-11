@@ -1,9 +1,8 @@
 <script>
   import Card from "./components/Card.svelte";
-  import { onMount } from "svelte";
   import { cards, handleShuffle } from "./lib/cards";
 
-  $: shuffledCards = handleShuffle(cards);
+  $: shuffledCards = handleShuffle([...cards]);
 
   $: firstTouch = null;
   $: secondTouch = null;
@@ -13,17 +12,24 @@
 
   let overlay = false;
   let newGame = false;
-
-  const startGame = () => {
+  let textInfo = "Click the button to start the game.";
+ 
+  const startGame = () => { 
+    shuffledCards = shuffledCards.map(card => card.checked = false)
+    shuffledCards = handleShuffle([...cards])
     newGame = true;
     timer = 60;
     setInterval(() => {
-      if (timer > 0) timer--;
+      if (timer >= 0) timer--;
     }, 1000);
   };
 
   const endGame = () => {
-    if (timer === 0) newGame = false;
+    if (timer === 0) {
+      textInfo = "Game over.";
+      newGame = false;
+      
+    }
   };
 
   const checkTouch = (id) => {
@@ -65,13 +71,16 @@
         }, 1000);
       }
     }
+    if (shuffledCards.every((e) => e.checked)) {
+      textInfo = "You Win.";
+      shuffledCards = handleShuffle([...cards])
+      shuffledCards = [...shuffledCards]
+      newGame = false;
+    }
 
     overlay = true;
   };
-
-  onMount(() => {
-    handleShuffle(cards);
-  });
+ 
 </script>
 
 <div class="bg-blue-700 h-dvh grid place-content-center relative gap-5">
@@ -102,6 +111,15 @@
       class:hidden={secondTouch === null}
     ></div>
   {:else}
-    <button class="btn btn-info" on:click={() => startGame()}>New Game</button>
+    <div
+      role="alert"
+      class="alert flex justify-center"
+      class:alert-success={textInfo === "You Win."}
+      class:alert-error={textInfo === "Game over."}
+    >
+      {textInfo}
+    </div>
+    <button class="btn btn-info" on:click={() => startGame()}>New Game</button
+    >
   {/if}
 </div>
