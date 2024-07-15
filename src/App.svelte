@@ -7,44 +7,46 @@
   $: firstTouch = null;
   $: secondTouch = null;
   $: secondTouch, checkTwins();
-  $: timer = 60;
-  $: timer, endGame();
+  let timer = 60;
+  let intervalId;
+  $: freezeCard = false;
 
-  let overlay = false;
   let newGame = false;
   let textInfo = "Click the button to start the game.";
- 
-  const startGame = () => { 
-    shuffledCards = shuffledCards.map(card => card.checked = false)
-    shuffledCards = handleShuffle([...cards])
-    newGame = true;
-    timer = 60;
-    setInterval(() => {
-      if (timer >= 0) timer--;
-    }, 1000);
-  };
 
   const endGame = () => {
     if (timer === 0) {
       textInfo = "Game over.";
       newGame = false;
-      
+      clearInterval(intervalId);
     }
+  };
+
+  const startGame = () => {
+    timer = 60;
+
+    shuffledCards = shuffledCards.map((card) => (card.checked = false));
+    shuffledCards = handleShuffle([...cards]);
+
+    newGame = true;
+    intervalId = setInterval(() => {
+      timer > 0 ? timer-- : endGame();
+    }, 1000);
   };
 
   const checkTouch = (id) => {
     if (!firstTouch) {
       firstTouch = id;
     } else if (!secondTouch && firstTouch) {
-      if (firstTouch !== id) secondTouch = id;
+      if (firstTouch !== id) {
+        secondTouch = id;
+      }
     }
   };
 
   const rightTwins = (parentId) => {
     shuffledCards.map((card) => {
-      if (card.parentId === parentId) {
-        card.checked = true;
-      }
+      if (card.parentId === parentId) card.checked = true;
     });
 
     shuffledCards = [...shuffledCards];
@@ -60,27 +62,30 @@
       if (firstTouch.parentId === secondTouch.parentId) {
         setTimeout(() => {
           rightTwins(secondTouch.parentId);
+          freezeCard = false;
           firstTouch = null;
           secondTouch = null;
         }, 500);
       } else {
         setTimeout(() => {
           wrongTwins();
+          freezeCard = false;
           firstTouch = null;
           secondTouch = null;
         }, 1000);
       }
-    }
-    if (shuffledCards.every((e) => e.checked)) {
-      textInfo = "You Win.";
-      shuffledCards = handleShuffle([...cards])
-      shuffledCards = [...shuffledCards]
-      newGame = false;
+      freezeCard = true;
     }
 
-    overlay = true;
+          
+    if (shuffledCards.every((e) => e.checked)) {
+        textInfo = "You Win.";
+        shuffledCards = handleShuffle([...cards]);
+        shuffledCards = [...shuffledCards];
+        newGame = false;
+        clearInterval(intervalId);
+      }
   };
- 
 </script>
 
 <div class="bg-blue-700 h-dvh grid place-content-center relative gap-5">
@@ -103,13 +108,10 @@
             {card}
             parentCard={cards[card.parentId - 1]}
             {checkTouch}
+            isFreeze={freezeCard}
           />{/if}
       {/each}
     </div>
-    <div
-      class="c-grid--overlay absolute w-full h-full left-0 top-0"
-      class:hidden={secondTouch === null}
-    ></div>
   {:else}
     <div
       role="alert"
@@ -119,7 +121,6 @@
     >
       {textInfo}
     </div>
-    <button class="btn btn-info" on:click={() => startGame()}>New Game</button
-    >
+    <button class="btn btn-info" on:click={() => startGame()}>New Game</button>
   {/if}
 </div>

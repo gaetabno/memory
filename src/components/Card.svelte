@@ -1,20 +1,23 @@
 <script>
   export let card;
   export let parentCard;
-  export let checkTouch = (card) => {}; 
-  $: hide = card.hide
- 
+  export let checkTouch = (card) => {};
+  export let isFreeze;
+  $: hide = card.hide;
 
-  const handleClick = () => { 
-    hide = false
-    checkTouch(card); 
-  }
+  const handleClick = (e) => {
+    if (!isFreeze) {
+      hide = false;
+      checkTouch(card);
+    }
+  };
 </script>
 
 <button
-  class="w-100 h-48 grid place-content-center rounded text-lg font-bold"
+  class="js-card w-100 h-48 grid place-content-center rounded text-lg font-bold"
   style="background: {hide ? '#cac500' : parentCard.item}"
-  on:click={() => handleClick()}
+  on:click={(e) => handleClick(e)}
+  class:cursor-default={isFreeze}
 >
   {#if !hide}
     {parentCard.id}
